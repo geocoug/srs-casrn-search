@@ -9,9 +9,14 @@ from typing import Generator
 
 import requests
 
-__version__ = "0.1."
-__vdate = "2023-01-04"
+try:
+    from _version import __vdate, __version__
+except ImportError:
+    __version__ = "unknown"
+    __vdate = "unknown"
+
 verbose = False
+BASE_URL = "https://cdxnodengn.epa.gov/cdx-srs-rest/substance/cas"
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -22,15 +27,12 @@ stream_handler.setFormatter(formatter)
 
 def clparser() -> argparse.ArgumentParser:
     """Create a parser to handle input arguments and displaying.
-
     a script specific help message.
     """
-    desc_msg = (
-        """Search the EPA Substance Registry Service (SRS) for matching substances based on CAS RN.\nVersion %s, %s"""
-        % (
-            __version__,
-            __vdate,
-        )
+    desc_msg = """Search the EPA Substance Registry Service (SRS)
+    for matching substances based on CAS RN.\nVersion %s, %s""" % (
+        __version__,
+        __vdate,
     )
     parser = argparse.ArgumentParser(description=desc_msg)
     parser.add_argument(
@@ -61,16 +63,19 @@ def send_request(url: str) -> requests.Response:
     """Send an HTTP GET request.
 
     Args:
+    ----
         url (str): Request endpoint.
 
     Raises:
+    ------
         requests.RequestException: Response errors.
 
     Returns:
+    -------
         requests.Response: HTTP response.
     """
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=5)
     except requests.RequestException:
         raise
     if not response.ok:
@@ -84,9 +89,11 @@ def read_csv(file: str) -> Generator:
     """Read a CSV file.
 
     Args:
+    ----
         file (str): CSV file to read.
 
     Yields:
+    ------
         Generator: Single record/row.
     """
     try:
@@ -100,6 +107,7 @@ def write_csv(file: str, row: list, mode: str) -> None:
     """Write a single record to a CSV file.
 
     Args:
+    ----
         file (str): CSV file to write to.
         row (list): Record to write.
         mode (str): Mode to open CSV file.
@@ -116,12 +124,14 @@ def casrn_search(incsv: str, outcsv: str, synonyms: bool = False) -> None:
     """Query EPA SRS for a list of CAS RN and write results to a CSV.
 
     The output CSV contains columns from the input file, plus the following:
-    "systematicName", "epaName", and "currentCasNumber".
+    'systematicName', 'epaName', and 'currentCasNumber'.
 
     Args:
+    ----
         incsv (str): Input CSV containing CAS RN to search in the first column.
         outcsv (str): Output CSV to write results.
-        synonyms (bool, optional): Include chemical synonyms in output. Defaults to False.
+        synonyms (bool, optional): Include chemical synonyms in output.
+        Defaults to False.
     """
     logger.info("Querying CAS Record Numbers:")
     num_rows = sum(1 for _ in read_csv(incsv)) - 1
@@ -136,7 +146,7 @@ def casrn_search(incsv: str, outcsv: str, synonyms: bool = False) -> None:
             write_csv(file=outcsv, row=result, mode="w+")
         else:
             cas_rn = row[0].replace("-", "")
-            url = f"https://cdxnodengn.epa.gov/cdx-srs-rest/substance/cas/{cas_rn}?qualifier=exact"
+            url = f"{BASE_URL}/{cas_rn}?qualifier=exact"
             if verbose:
                 logger.info(f"{idx}/{num_rows} - {cas_rn}")
             response = send_request(url).json()
@@ -161,9 +171,11 @@ def validate_args(args: argparse.Namespace) -> None:
     """Validate input arguments.
 
     Args:
+    ----
         args (argparse.Namespace): Script arguments.
 
     Raises:
+    ------
         FileNotFoundError: Input file not found error.
         Exception: Input file does not have valid CSV extension.
         Exception: Output file does not have valid CSV extension.
@@ -171,12 +183,11 @@ def validate_args(args: argparse.Namespace) -> None:
     if args.input_file:
         if not os.path.exists(args.input_file):
             raise FileNotFoundError(args.input_file)
-        if not os.path.splitext(args.input_file)[-1] in [".csv"]:
+        if os.path.splitext(args.input_file)[-1] not in [".csv"]:
             raise Exception(f"File extension not valid: {args.input_file}")
 
-    if args.output_file:
-        if not os.path.splitext(args.output_file)[-1] in [".csv"]:
-            raise Exception(f"File extension not valid: {args.output_file}")
+    if args.output_file and os.path.splitext(args.output_file)[-1] not in [".csv"]:
+        raise Exception(f"File extension not valid: {args.output_file}")
 
 
 if __name__ == "__main__":
@@ -186,7 +197,7 @@ if __name__ == "__main__":
     verbose = args.verbose
     if verbose:
         logger.addHandler(stream_handler)
-    logger.info("%s\n" % parser.description)
+    logger.info("%s, %s, %s\n" % (os.path.basename(__file__), __version__, __vdate))
     casrn_search(
         incsv=args.input_file,
         outcsv=args.output_file,
