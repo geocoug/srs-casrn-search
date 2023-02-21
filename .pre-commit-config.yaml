@@ -44,7 +44,7 @@ repos:
   # PEP 8 style guide, error and complexity checks
   # Replaces Flake8, isort, pydocstyle, pyupgrade, bandit, and autoflake
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.246
+    rev: v0.0.249
     hooks:
       - id: ruff
         args: [--config=./.github/linters/ruff.toml]
