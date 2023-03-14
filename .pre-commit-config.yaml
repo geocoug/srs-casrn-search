@@ -2,7 +2,7 @@
 repos:
   # Protect secrets using Gitleaks
   - repo: https://github.com/zricethezav/gitleaks
-    rev: v8.15.3
+    rev: v8.16.0
     hooks:
       - id: gitleaks
   # Supported base hooks
@@ -44,7 +44,7 @@ repos:
   # PEP 8 style guide, error and complexity checks
   # Replaces Flake8, isort, pydocstyle, pyupgrade, bandit, and autoflake
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.249
+    rev: v0.0.255
     hooks:
       - id: ruff
         args: [--config=./.github/linters/ruff.toml]
