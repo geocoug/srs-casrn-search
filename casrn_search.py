@@ -147,8 +147,7 @@ def casrn_search(incsv: str, outcsv: str, synonyms: bool = False) -> None:
         else:
             cas_rn = row[0].replace("-", "")
             url = f"{BASE_URL}/{cas_rn}?qualifier=exact"
-            if verbose:
-                logger.info(f"{idx}/{num_rows} - {cas_rn}")
+            logger.info(f"{idx}/{num_rows} - {cas_rn}")
             response = send_request(url).json()
             if len(response) == 0:
                 result.extend([None] * len(header))
