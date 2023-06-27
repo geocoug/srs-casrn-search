@@ -2,7 +2,7 @@
 repos:
   # Protect secrets using Gitleaks
   - repo: https://github.com/zricethezav/gitleaks
-    rev: v8.16.2
+    rev: v8.17.0
     hooks:
       - id: gitleaks
   # Supported base hooks
@@ -20,19 +20,19 @@ repos:
       - id: trailing-whitespace
   # YAML linter
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.30.0
+    rev: v1.32.0
     hooks:
       - id: yamllint
         args: [--config-file, ./.github/linters/.yaml-lint.yml]
   # Markdown lint
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.33.0
+    rev: v0.35.0
     hooks:
       - id: markdownlint
         args: [--config, .github/linters/.markdownlint.yml]
   # Add trailing commas to calls and literals.
   - repo: https://github.com/asottile/add-trailing-comma
-    rev: v2.4.0
+    rev: v2.5.1
     hooks:
       - id: add-trailing-comma
         args: [--py36-plus]
@@ -44,7 +44,7 @@ repos:
   # PEP 8 style guide, error and complexity checks
   # Replaces Flake8, isort, pydocstyle, pyupgrade, bandit, and autoflake
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.261
+    rev: v0.0.275
     hooks:
       - id: ruff
         args: [--config=./.github/linters/ruff.toml]
