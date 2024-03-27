@@ -1,18 +1,34 @@
 ---
+fail_fast: false
+
+# exclude: |
+#   (?x)^(
+#     build/ |
+#     dist/ |
+#   )$
+
 repos:
+  - repo: meta
+    hooks:
+      - id: identity
+      - id: check-hooks-apply
   # Protect secrets using Gitleaks
   - repo: https://github.com/zricethezav/gitleaks
-    rev: v8.16.2
+    rev: v8.18.2
     hooks:
       - id: gitleaks
+  # Spell check
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.19.0
+    hooks:
+      - id: typos
   # Supported base hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: check-added-large-files
       - id: check-ast
       - id: check-case-conflict
-      - id: check-json
       - id: check-yaml
       - id: end-of-file-fixer
       - id: mixed-line-ending
@@ -20,31 +36,32 @@ repos:
       - id: trailing-whitespace
   # YAML linter
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.30.0
+    rev: v1.35.1
     hooks:
       - id: yamllint
-        args: [--config-file, ./.github/linters/.yaml-lint.yml]
+        args: [--config-file, ./.linters/.yaml-lint.yml]
   # Markdown lint
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.33.0
+    rev: v0.39.0
     hooks:
       - id: markdownlint
-        args: [--config, .github/linters/.markdownlint.yml]
+        args: [-c, ./.linters/.markdownlint.yml]
+        types: [file]
+        files: .(md|qmd)$
   # Add trailing commas to calls and literals.
   - repo: https://github.com/asottile/add-trailing-comma
-    rev: v2.4.0
+    rev: v3.1.0
     hooks:
       - id: add-trailing-comma
-        args: [--py36-plus]
-  # Opinionated code styling
-  - repo: https://github.com/psf/black
-    rev: 23.3.0
-    hooks:
-      - id: black
   # PEP 8 style guide, error and complexity checks
-  # Replaces Flake8, isort, pydocstyle, pyupgrade, bandit, and autoflake
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.261
+  # Replaces Black, Flake8, isort, pydocstyle, pyupgrade, bandit, and autoflake
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.3.0
     hooks:
+      # Run the Ruff linter.
       - id: ruff
-        args: [--config=./.github/linters/ruff.toml]
+        args: [--config=./.linters/.ruff.toml, --fix, --exit-non-zero-on-fix]
+      # Run the Ruff formatter.
+      - id: ruff-format
+        args: [--config=./.linters/.ruff.toml]

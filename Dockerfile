@@ -1,7 +1,7 @@
 # ~~~~~~~~~~~
 # Build stage
 # ~~~~~~~~~~~
-FROM python:3.10-slim as staging
+FROM python:3.11-slim as staging
 WORKDIR /usr/local/app
 
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -9,7 +9,7 @@ ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update -y
 
-RUN pip install --no-cache-dir --upgrade pip==22.3.1
+RUN pip install --no-cache-dir --upgrade pip==24.0
 
 COPY ./requirements.txt .
 
@@ -19,7 +19,7 @@ RUN pip wheel --no-cache-dir --wheel-dir /usr/local/app/wheels -r requirements.t
 # ~~~~~~~~~~~
 # Build final
 # ~~~~~~~~~~~
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 ENV HOME=/usr/local/app
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -38,13 +38,9 @@ RUN apt-get update && \
 COPY --from=staging /usr/local/app/wheels /wheels
 
 # hadolint ignore=DL3013
-RUN pip install --no-cache-dir --upgrade pip==22.3.1 && \
+RUN pip install --no-cache-dir --upgrade pip==24.0 && \
     pip install --no-cache-dir /wheels/*
-
-# COPY . $HOME
 
 RUN chown -R app:app $HOME
 
 USER app
-
-# CMD ["python", "casrn_search.py", "-v", "chemicals.csv", "srs_chemicals.csv"]

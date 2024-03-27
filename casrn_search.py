@@ -1,22 +1,18 @@
-#! /usr/bin/python
 # casrn_search.py
 
 import argparse
 import csv
 import logging
 import os
-from typing import Generator
+import re
+from collections.abc import Generator
 
 import requests
 
-try:
-    from _version import __vdate, __version__
-except ImportError:
-    __version__ = "unknown"
-    __vdate = "unknown"
+__version__ = "0.0.3"
+__vdate = "2024-03-27"
 
-verbose = False
-BASE_URL = "https://cdxnodengn.epa.gov/cdx-srs-rest/substance/cas"
+BASE_URL = "https://cdxapps.epa.gov/oms-substance-registry-services/rest-api/substance/cas"
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -29,11 +25,8 @@ def clparser() -> argparse.ArgumentParser:
     """Create a parser to handle input arguments and displaying.
     a script specific help message.
     """
-    desc_msg = """Search the EPA Substance Registry Service (SRS)
-    for matching substances based on CAS RN.\nVersion %s, %s""" % (
-        __version__,
-        __vdate,
-    )
+    desc_msg = f"""Search the EPA Substance Registry Service (SRS)
+    for matching substances based on CAS RN.\nVersion {__version__}, {__vdate}"""
     parser = argparse.ArgumentParser(description=desc_msg)
     parser.add_argument(
         "input_file",
@@ -59,7 +52,7 @@ def clparser() -> argparse.ArgumentParser:
     return parser
 
 
-def send_request(url: str) -> requests.Response:
+def send_request(url: str) -> requests.Response | None:
     """Send an HTTP GET request.
 
     Args:
@@ -73,15 +66,18 @@ def send_request(url: str) -> requests.Response:
     Returns:
     -------
         requests.Response: HTTP response.
+
     """
     try:
         response = requests.get(url, timeout=5)
-    except requests.RequestException:
-        raise
+    except requests.RequestException as err:
+        logger.warning(err)
+        return None
     if not response.ok:
-        raise requests.RequestException(
-            f"Request returned status code {response.status_code}.\nRequest: {url}",
+        logger.warning(
+            f"  Request returned status code {response.status_code}.\n  Request: {url}",
         )
+        return None
     return response
 
 
@@ -95,6 +91,7 @@ def read_csv(file: str) -> Generator:
     Yields:
     ------
         Generator: Single record/row.
+
     """
     try:
         with open(file, encoding="utf-8-sig") as f:
@@ -111,6 +108,7 @@ def write_csv(file: str, row: list, mode: str) -> None:
         file (str): CSV file to write to.
         row (list): Record to write.
         mode (str): Mode to open CSV file.
+
     """
     try:
         with open(file, mode) as f:
@@ -132,7 +130,9 @@ def casrn_search(incsv: str, outcsv: str, synonyms: bool = False) -> None:
         outcsv (str): Output CSV to write results.
         synonyms (bool, optional): Include chemical synonyms in output.
         Defaults to False.
+
     """
+    logger.info(f"{os.path.basename(__file__)}, {__version__}, {__vdate}\n")
     logger.info("Querying CAS Record Numbers:")
     num_rows = sum(1 for _ in read_csv(incsv)) - 1
     rows = read_csv(incsv)
@@ -145,10 +145,15 @@ def casrn_search(incsv: str, outcsv: str, synonyms: bool = False) -> None:
             result.extend(header)
             write_csv(file=outcsv, row=result, mode="w+")
         else:
-            cas_rn = row[0].replace("-", "")
+            # replace any special characters that would break a URL, except for "-"
+            cas_rn = re.sub(r"[^a-zA-Z0-9-]", "", row[0])
             url = f"{BASE_URL}/{cas_rn}?qualifier=exact"
-            logger.info(f"{idx}/{num_rows} - {cas_rn}")
-            response = send_request(url).json()
+            logger.info(f"{str(idx).zfill(len(str(num_rows)))}/{num_rows} - {cas_rn}")
+            response = send_request(url)
+            if response:
+                response = response.json()
+            else:
+                continue
             if len(response) == 0:
                 result.extend([None] * len(header))
             else:
@@ -178,6 +183,7 @@ def validate_args(args: argparse.Namespace) -> None:
         FileNotFoundError: Input file not found error.
         Exception: Input file does not have valid CSV extension.
         Exception: Output file does not have valid CSV extension.
+
     """
     if args.input_file:
         if not os.path.exists(args.input_file):
@@ -196,7 +202,6 @@ if __name__ == "__main__":
     verbose = args.verbose
     if verbose:
         logger.addHandler(stream_handler)
-    logger.info("%s, %s, %s\n" % (os.path.basename(__file__), __version__, __vdate))
     casrn_search(
         incsv=args.input_file,
         outcsv=args.output_file,

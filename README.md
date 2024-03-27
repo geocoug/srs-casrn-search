@@ -3,7 +3,7 @@
 [![ci](https://github.com/geocoug/srs-casrn-search/workflows/ci/badge.svg)](https://github.com/geocoug/srs-casrn-search/actions/workflows/ci.yml)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/geocoug/srs-casrn-search/main.svg)](https://results.pre-commit.ci/latest/github/geocoug/srs-casrn-search/main)
 
-Query the [EPA Substance Registry Serivce](https://cdxnodengn.epa.gov/cdx-srs-rest/) using a list of [CAS Registry Numbers](https://en.wikipedia.org/wiki/CAS_Registry_Number).
+Query the [EPA Substance Registry Service](https://cdxnodengn.epa.gov/cdx-srs-rest/) using a list of [CAS Registry Numbers](https://en.wikipedia.org/wiki/CAS_Registry_Number).
 
 ## Usage
 
