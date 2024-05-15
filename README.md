@@ -27,7 +27,7 @@ options:
 
 ### Docker
 
-Build the image:
+#### Building from source
 
 ```sh
 docker build -t casrn_search .
@@ -39,7 +39,25 @@ Run the container:
 docker run -it --rm casrn_search --help
 ```
 
-#### Examples
+#### Using the pre-built image
+
+```sh
+docker pull ghcr.io/geocoug/srs-casrn-search:latest
+```
+
+Optionally tag the image:
+
+```sh
+docker tag ghcr.io/geocoug/srs-casrn-search:latest casrn_search
+```
+
+Run the container:
+
+```sh
+docker run -it --rm ghcr.io/geocoug/srs-casrn-search:latest --help
+```
+
+### Examples
 
 1. Search for a list of CAS RN and output the results to the terminal:
 

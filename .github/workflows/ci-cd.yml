@@ -26,6 +26,7 @@ jobs:
         type=ref,event=branch
         type=semver,pattern={{version}}
         type=raw,value=gha-${{ github.run_id }}
+      platforms: linux/amd64,linux/arm64
 
   python-checks:
     name: Python Checks
