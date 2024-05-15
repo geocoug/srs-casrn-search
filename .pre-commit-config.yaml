@@ -1,12 +1,4 @@
 ---
-fail_fast: false
-
-# exclude: |
-#   (?x)^(
-#     build/ |
-#     dist/ |
-#   )$
-
 repos:
   - repo: meta
     hooks:
@@ -19,12 +11,12 @@ repos:
       - id: gitleaks
   # Spell check
   - repo: https://github.com/crate-ci/typos
-    rev: v1.19.0
+    rev: v1.21.0
     hooks:
       - id: typos
   # Supported base hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: check-added-large-files
       - id: check-ast
@@ -39,13 +31,13 @@ repos:
     rev: v1.35.1
     hooks:
       - id: yamllint
-        args: [--config-file, ./.linters/.yaml-lint.yml]
+        args: [--config-file, .linters/.yaml-lint.yml]
   # Markdown lint
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.39.0
+    rev: v0.40.0
     hooks:
       - id: markdownlint
-        args: [-c, ./.linters/.markdownlint.yml]
+        args: [-c, .linters/.markdownlint.yml]
         types: [file]
         files: .(md|qmd)$
   # Add trailing commas to calls and literals.
@@ -57,11 +49,11 @@ repos:
   # Replaces Black, Flake8, isort, pydocstyle, pyupgrade, bandit, and autoflake
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.3.0
+    rev: v0.4.4
     hooks:
       # Run the Ruff linter.
       - id: ruff
-        args: [--config=./.linters/.ruff.toml, --fix, --exit-non-zero-on-fix]
+        args: [--config=.linters/.ruff.toml, --fix, --exit-non-zero-on-fix]
       # Run the Ruff formatter.
       - id: ruff-format
-        args: [--config=./.linters/.ruff.toml]
+        args: [--config=.linters/.ruff.toml]

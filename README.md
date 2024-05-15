@@ -1,31 +1,80 @@
 # srs-casrn-search
 
-[![ci](https://github.com/geocoug/srs-casrn-search/workflows/ci/badge.svg)](https://github.com/geocoug/srs-casrn-search/actions/workflows/ci.yml)
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/geocoug/srs-casrn-search/main.svg)](https://results.pre-commit.ci/latest/github/geocoug/srs-casrn-search/main)
+[![ci/cd](https://github.com/geocoug/srs-casrn-search/workflows/ci-cd/badge.svg)](https://github.com/geocoug/srs-casrn-search/actions/workflows/ci-cd.yml)
 
-Query the [EPA Substance Registry Service](https://cdxnodengn.epa.gov/cdx-srs-rest/) using a list of [CAS Registry Numbers](https://en.wikipedia.org/wiki/CAS_Registry_Number).
+Query the [EPA Substance Registry Service](https://cdxapps.epa.gov/oms-substance-registry-services) using a list of [CAS Registry Numbers](https://en.wikipedia.org/wiki/CAS_Registry_Number).
 
 ## Usage
 
-### CLI
+### Python
 
 ```sh
 $ python casrn_search.py --help
 
-Search the EPA Substance Registry Service (SRS) for matching substances based on CAS RN.
+usage: casrn_search.py [-h] [-s] [-f] [-v] cas_rn [cas_rn ...]
+
+Search the EPA Substance Registry Service (SRS) for matching substances based on CAS RN and display results as a markdown table in the terminal. Version 0.1.2, 2024-04-02
 
 positional arguments:
-  input_file      CSV containing a list of CAS Registry Numbers to search. CAS Registry Numbers must be in the first column.
-  output_file     Name of the output CSV file.
+  cas_rn          CAS RN or list of CAS RN to search in the EPA Substance Registry Service (SRS).
 
 options:
   -h, --help      show this help message and exit
   -s, --synonyms  Include chemical synonyms.
+  -f, --file      Output results to a CSV file instead of the terminal.
   -v, --verbose   Control the amount of information to display.
 ```
 
 ### Docker
 
+Build the image:
+
 ```sh
-docker run -it --rm -v $(pwd):/usr/local/app $(docker build -q -t casrn_search .) python casrn_search.py -v chemicals.csv srs_chemicals.csv
+docker build -t casrn_search .
 ```
+
+Run the container:
+
+```sh
+docker run -it --rm casrn_search --help
+```
+
+#### Examples
+
+1. Search for a list of CAS RN and output the results to the terminal:
+
+    ```sh
+    docker run -it --rm casrn_search -v 7440-66-6 7440097
+    ```
+
+    Output:
+
+    ```txt
+    casrn_search.py, 0.1.2, 2024-04-02
+
+    Querying CAS Record Numbers:
+    1/2: 7440-66-6
+    2/2: 7440097
+
+    Results:
+    | cas_rn    | systematicName   | epaName   | currentCasNumber   |
+    |-----------|------------------|-----------|--------------------|
+    | 7440097   | Potassium        | Potassium | 7440-09-7          |
+    | 7440-66-6 | Zinc             | Zinc      | 7440-66-6          |
+    ```
+
+2. Search for a list of CAS RN and output the results to a CSV file:
+
+    > ***Note***: you must mount a directory to the container to save the file locally.
+
+    ```sh
+    docker run -v $(pwd):/app -it --rm casrn_search -v -f 7440-66-6 7440097
+    ```
+
+    Output:
+
+    ```txt
+    cas_rn,systematicName,epaName,currentCasNumber
+    7440097,Potassium,Potassium,7440-09-7
+    7440-66-6,Zinc,Zinc,7440-66-6
+    ```

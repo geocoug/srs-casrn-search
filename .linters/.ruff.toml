@@ -63,7 +63,7 @@ select = [
     "PD",
     "RUF",
 ]
-ignore = ["D", "S101", "B017"]
+ignore = ["D", "S101", "B017", "PD901"]
 per-file-ignores = {}
 
 # Allow fix for all enabled rules (when `--fix`) is provided.

@@ -2,7 +2,7 @@
 # Build stage
 # ~~~~~~~~~~~
 FROM python:3.11-slim as staging
-WORKDIR /usr/local/app
+WORKDIR /tmp
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
@@ -21,16 +21,13 @@ RUN pip wheel --no-cache-dir --wheel-dir /usr/local/app/wheels -r requirements.t
 # ~~~~~~~~~~~
 FROM python:3.11-slim
 
-ENV HOME=/usr/local/app
+ENV HOME=/app
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 RUN mkdir -p $HOME
 
 WORKDIR $HOME
-
-RUN addgroup --system app && \
-    adduser --system --group app
 
 RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
@@ -41,6 +38,6 @@ COPY --from=staging /usr/local/app/wheels /wheels
 RUN pip install --no-cache-dir --upgrade pip==24.0 && \
     pip install --no-cache-dir /wheels/*
 
-RUN chown -R app:app $HOME
+COPY casrn_search.py $HOME
 
-USER app
+ENTRYPOINT ["python", "casrn_search.py"]
